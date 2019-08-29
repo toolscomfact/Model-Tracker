@@ -351,7 +351,7 @@ app.post('/private/update', (req, res) => {
 app.post('/private/get', (req, res) => {
     let gamename = req.body.gamename;
     let gamekey = req.body.gamekey;
-    let updatedata = req.body.updatedata;
+    let query = req.body.query;
 
     let collection = req.body.collection;
     let accessToken = req.body.accessToken;
@@ -368,7 +368,7 @@ app.post('/private/get', (req, res) => {
 
                     let dbCollection = tracker.Database.collection(collection);
 
-                    dbCollection.find({userid : accessTokenDocument.userid}).toArray((err, collectionItems) => {
+                    dbCollection.find(Object.assign(query, {userid : accessTokenDocument.userid})).toArray((err, collectionItems) => {
                         if (collectionItems.length > 0){
                             let collectionDocument = collectionItems[0];
                             delete collectionDocument.userid;
