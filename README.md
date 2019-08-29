@@ -5,7 +5,6 @@ Http Restful API 를 통해 mongodb 를 게임/유저 별로 분리하여 관리
 Node.js 의 mongodb_host 를 바꿔주시면 됩니다.
 
 ## Restful API
-METHOD<t>URI<t>DESCRIPTION <br>
 POST     /api/newgame        세션에 게임을 등록시킵니다. <br>
 POST     /api/deletegame     세션에서 게임을 제거시킴과 동시에, 데이터베이스를 초기화합니다.  <br>
 POST     /api/signup         사용자를 가입시킵니다. <br>
