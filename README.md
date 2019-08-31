@@ -1,8 +1,12 @@
 # modeltracker
 Http Restful API 를 통해 mongodb 를 게임/유저 별로 분리하여 관리하게 도와줍니다.
 
+## Https 설정
+node.js 파일의 httpsOptions 에 key 와 cert 를 바꿔주시면 됩니다. <br>
+https 를 사용하시지 않으실경우 416번 줄을 주석처리 하시거나 지워주시면 됩니다.
+
 ## Mongodb 설정
-Node.js 의 mongodb_host 를 바꿔주시면 됩니다.
+node.js 파일의 mongodb_host 를 바꿔주시면 됩니다.
 
 ## Restful API
 POST     /api/newgame        세션에 게임을 등록시킵니다. <br>
