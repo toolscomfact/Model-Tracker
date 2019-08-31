@@ -39,7 +39,17 @@ let resp_msg = (resp, reason, moredata={}) => {
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 
-app.post('/api/newgame', (req, res) => {
+app.try_post = (uri, callback) => {
+  app.post(uri, (req, res) => {
+    try{
+      callback(req, res);
+    }catch (err){
+      res.send(err);
+    }
+  });
+};
+
+app.try_post('/api/newgame', (req, res) => {
     // 파라메터로 gamename 을 받아옵니다.
 
     let gamename = req.body.gamename;
@@ -73,7 +83,7 @@ app.post('/api/newgame', (req, res) => {
     }
 });
 
-app.post('/api/deletegame', (req, res) => {
+app.try_post('/api/deletegame', (req, res) => {
     let gamename = req.body.gamename;
     let gamekey = req.body.gamekey;
 
@@ -111,7 +121,7 @@ app.post('/api/deletegame', (req, res) => {
     }
 });
 
-app.post('/api/signup', (req, res) => {
+app.try_post('/api/signup', (req, res) => {
     let gamename = req.body.gamename;
     let gamekey = req.body.gamekey;
 
@@ -151,7 +161,7 @@ app.post('/api/signup', (req, res) => {
     }
 });
 
-app.post('/api/signin', (req, res) => {
+app.try_post('/api/signin', (req, res) => {
     let gamename = req.body.gamename;
     let gamekey = req.body.gamekey;
 
@@ -201,7 +211,7 @@ app.post('/api/signin', (req, res) => {
     }
 });
 
-app.post('/api/setversion', (req, res) => {
+app.try_post('/api/setversion', (req, res) => {
     let gamename = req.body.gamename;
     let gamekey = req.body.gamekey;
     let version = req.body.version;
@@ -229,7 +239,7 @@ app.post('/api/setversion', (req, res) => {
     }
 });
 
-app.post('/private/push', (req, res) => {
+app.try_post('/private/push', (req, res) => {
     let gamename = req.body.gamename;
     let gamekey = req.body.gamekey;
     let gamedata = req.body.gamedata;
@@ -272,7 +282,7 @@ app.post('/private/push', (req, res) => {
     }
 });
 
-app.post('/private/pull', (req, res) => {
+app.try_post('/private/pull', (req, res) => {
     let gamename = req.body.gamename;
     let gamekey = req.body.gamekey;
 
@@ -306,9 +316,11 @@ app.post('/private/pull', (req, res) => {
     }
 });
 
-app.post('/private/update', (req, res) => {
+app.try_post('/private/update', (req, res) => {
     let gamename = req.body.gamename;
     let gamekey = req.body.gamekey;
+
+    let query = req.body.query;
     let updatedata = req.body.updatedata;
 
     let collection = req.body.collection;
@@ -328,14 +340,16 @@ app.post('/private/update', (req, res) => {
 
                     let dbCollection = tracker.Database.collection(collection);
 
-                    dbCollection.find({userid : userid}).toArray((err, collectionItems) => {
-                        if (collectionItems.length > 0){
-                            let collectionDocument = collectionItems[0];
-                            console.log(updatedata);
-                            console.log(JSON.parse(updatedata));
-                            console.log(collectionDocument);
+                    let queryObject = Object.assign({userid : userid}, JSON.parse(query));
+                    console.log("query : " + JSON.stringify(queryObject));
 
-                            dbCollection.updateOne({_id : collectionDocument._id}, JSON.parse(updatedata), (err, result) => {
+                    dbCollection.find(queryObject).toArray((err, collectionItems) => {
+                        if (collectionItems != null){
+                            let collectionDocument = collectionItems[0];
+
+                            dbCollection.updateMany(
+                              Object.assign({userid : userid}, JSON.parse(query)),
+                              JSON.parse(updatedata), (err, result) => {
                                resp_msg(res, "Update completed [ msg " + err + " ]");
                             });
                         }else{
@@ -354,7 +368,7 @@ app.post('/private/update', (req, res) => {
     }
 });
 
-app.post('/private/get', (req, res) => {
+app.try_post('/private/get', (req, res) => {
     let gamename = req.body.gamename;
     let gamekey = req.body.gamekey;
     let query = req.body.query;
@@ -379,7 +393,7 @@ app.post('/private/get', (req, res) => {
 
                     dbCollection.find(Object.assign(queryObject, {userid : accessTokenDocument.userid})).toArray((err, collectionItems) => {
                         if (collectionItems.length > 0){
-                            let collectionDocument = collectionItems[0];
+                            let collectionDocument = collectionItems;
                             delete collectionDocument.userid;
 
                             resp_msg(res, "Get completed.", {"data" : collectionDocument});
