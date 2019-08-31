@@ -1,6 +1,9 @@
 FROM node:latest
 MAINTAINER 콘센트 (박원호) toolscomfact@gmail.com
 
+ENV HTTPS_PRIV_KEY="/app/privkey.pem"
+ENV HTTPS_CERT="/api/fullchain.pem"
+
 WORKDIR /app
 ADD . /app
 
