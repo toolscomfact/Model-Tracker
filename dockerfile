@@ -1,4 +1,4 @@
-FROM node:Dubnium
+FROM node:latest
 MAINTAINER 콘센트 (박원호) toolscomfact@gmail.com
 
 WORKDIR /app
