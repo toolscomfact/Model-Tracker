@@ -415,8 +415,8 @@ app.try_post('/private/get', (req, res) => {
 });
 
 const httpsOptions = {
-  key: fs.readFileSync('/etc/letsencrypt/live/mongotracker.com/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/mongotracker.com/fullchain.pem')
+  key: fs.readFileSync(process.env.HTTPS_PRIV_KEY),
+  cert: fs.readFileSync(process.env.HTTPS_CERT)
 }
 
 let server_on = () => {
