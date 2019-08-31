@@ -10,7 +10,7 @@ const checkpassword = (db, password, callback) => {
     SettingsCollection.find().toArray((err, items) => {
         if (items.length > 0){
             var SettingDoc = items[0];
-            
+
             if (SettingDoc.password === gethash(password)){
                 callback({valid:true});
             }else{
@@ -33,8 +33,8 @@ function ModelTracker(host, database, password, callback) {
     this.UserDefaultData = undefined;
 
     this.MongoClient.connect(host+"/"+database, (err, db) => {
-
         if (err && callback.failed !== undefined){
+            //console.log(err);
             callback.failed();
         }else if (callback.success !== undefined){
             var gamedb = db.db(database);
@@ -42,7 +42,7 @@ function ModelTracker(host, database, password, callback) {
 
             var settings = gamedb.collection("settings");
             this.SettingCollection = settings;
-            
+
             var users = gamedb.collection("users");
             this.UserCollection = users;
 

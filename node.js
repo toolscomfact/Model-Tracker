@@ -1,13 +1,18 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const fs = require('fs');
+const http = require('http');
+const https = require('https');
+
 const modeltracker = require('./modeltracker.js');
+
 const ObjectId = require('mongodb').ObjectID;
 
 var app = express();
 
 var trackers = {};
 
-var mongodb_host = "mongodb://localhost:27017";
+var mongodb_host = "mongodb://localhost:32768";
 
 let resp_error = (resp, reason, moredata={}) => {
     let data = {
@@ -27,7 +32,7 @@ let resp_msg = (resp, reason, moredata={}) => {
     };
 
     data = Object.assign(data, moredata);
-    
+
     resp.send(JSON.stringify(data));
 }
 
@@ -36,9 +41,11 @@ app.use(bodyParser.json());
 
 app.post('/api/newgame', (req, res) => {
     // 파라메터로 gamename 을 받아옵니다.
-    
+
     let gamename = req.body.gamename;
     let gamekey = req.body.gamekey;
+
+    console.log(req.body);
 
     if ((gamename !== undefined) && (gamekey !== undefined)){
         let trackerNameSet = Object.keys(trackers);
@@ -55,7 +62,7 @@ app.post('/api/newgame', (req, res) => {
                     }
 
                     trackers[gamename] = tracker;
-                }, 
+                },
                 failed:()=>{
                     resp_error(res, "can't reach db. try again later");
                 }
@@ -82,7 +89,7 @@ app.post('/api/deletegame', (req, res) => {
                     if (setting.password !== undefined){
                         if (setting.password === modeltracker.gethash(gamekey)){
                             tracker.Database.dropDatabase(gamename);
-                            
+
                             delete trackers[gamename];
 
                             resp_msg(res, "Drop success.");
@@ -156,7 +163,7 @@ app.post('/api/signin', (req, res) => {
 
         if (tracker !== undefined){
             let users = tracker.UserCollection;
-        
+
             modeltracker.checkpassword(tracker.Database, gamekey, (data) => {
                 if (data.valid){
                     users.find({userid : userid, password : modeltracker.gethash(userpassword)}).toArray((err, items) => {
@@ -328,9 +335,12 @@ app.post('/private/update', (req, res) => {
                     dbCollection.find({userid : userid}).toArray((err, collectionItems) => {
                         if (collectionItems.length > 0){
                             let collectionDocument = collectionItems[0];
+                            console.log(updatedata);
+                            console.log(JSON.parse(updatedata));
+                            console.log(collectionDocument);
 
-                            dbCollection.updateOne({_id : collectionDocument._id}, updatedata, () => {
-                               resp_msg(res, "Update completed"); 
+                            dbCollection.updateOne({_id : collectionDocument._id}, JSON.parse(updatedata), (err, result) => {
+                               resp_msg(res, "Update completed [ msg " + err + " ]");
                             });
                         }else{
                             resp_error(res, "Document not exists");
@@ -365,15 +375,18 @@ app.post('/private/get', (req, res) => {
             accessTokens.find({_id : new ObjectId(accessToken)}).toArray((err, items) => {
                 if (items.length > 0){
                     let accessTokenDocument = items[0];
+                    let queryObject = JSON.parse(query);
 
                     let dbCollection = tracker.Database.collection(collection);
+                    console.log(queryObject);
+                    console.log(Object.assign(queryObject, {userid : accessTokenDocument.userid}));
 
-                    dbCollection.find(Object.assign(query, {userid : accessTokenDocument.userid})).toArray((err, collectionItems) => {
+                    dbCollection.find(Object.assign(queryObject, {userid : accessTokenDocument.userid})).toArray((err, collectionItems) => {
                         if (collectionItems.length > 0){
                             let collectionDocument = collectionItems[0];
                             delete collectionDocument.userid;
 
-                            resp_msg(res, "Get completed.", collectionDocument);
+                            resp_msg(res, "Get completed.", {"data" : collectionDocument});
                         }else{
                             resp_msg(res, "Get completed.", {"data" : {}});
                         }
@@ -390,6 +403,18 @@ app.post('/private/get', (req, res) => {
     }
 });
 
-var server = app.listen(80, () => {
-    console.log("App statred");
-});
+const httpsOptions = {
+  key: fs.readFileSync('/etc/letsencrypt/live/mongotracker.com/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/mongotracker.com/fullchain.pem')
+}
+
+let server_on = () => {
+  console.log("App started");
+}
+
+http.createServer(app).listen(80, server_on);
+https.createServer(httpsOptions, app).listen(443, server_on);
+
+//var server = app.listen(80, () => {
+//    console.log("App statred");
+//});
