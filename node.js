@@ -252,13 +252,9 @@ app.post('/private/push', (req, res) => {
                             let dbCollection = tracker.Database.collection(collection);
 
                             dbCollection.find({userid : userid}).count((err, count) => {
-                                if (count === 0){
-                                    dbCollection.insertOne(Object.assign({userid : userid}, JSON.parse(gamedata)), () => {
+                              dbCollection.insertOne(Object.assign({userid : userid}, JSON.parse(gamedata)), () => {
                                         resp_msg(res, "Data push complete.");
                                     });
-                                }else{
-                                    resp_error(res, "Data already pushed");
-                                }
                             });
                         }else{
                             resp_error(res, "Invalid accessToken");
