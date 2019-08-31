@@ -1,0 +1,32 @@
+{
+  "name": "modeltracker",
+  "version": "1.0.0",
+  "description": "Modeltracker server",
+  "main": "modeltracker.js",
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "mongose": "^0.0.2-security",
+    "express": "^4.17.1",
+    "body-parser": "^1.19.0",
+    "mongodb": "^3.3.2",
+    "mongoose": "^5.6.11"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node node.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/toolscomfact/modeltracker.git"
+  },
+  "keywords": [
+    "mongodb",
+    "modeltracker"
+  ],
+  "author": "콘센트 (박원호)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/toolscomfact/modeltracker/issues"
+  },
+  "homepage": "https://github.com/toolscomfact/modeltracker#readme"
+}
