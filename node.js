@@ -287,6 +287,7 @@ app.try_post('/private/pull', (req, res) => {
     let gamekey = req.body.gamekey;
 
     let collection = req.body.collection;
+    let query = req.body.query;
     let accessToken = req.body.accessToken;
 
     if ((gamename !== undefined) && (gamekey !== undefined) && (collection !== undefined) && (accessToken !== undefined)){
@@ -301,7 +302,7 @@ app.try_post('/private/pull', (req, res) => {
 
                     let dbCollection = tracker.Database.collection(collection);
 
-                    dbCollection.deleteOne({userid : document.userid}, () => {
+                    dbCollection.deleteMany(Object.assign({userid : document.userid}, JSON.parse(query)), () => {
                         resp_msg(res, "delete completed");
                     });
                 }else{
