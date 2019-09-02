@@ -12,7 +12,7 @@ var app = express();
 
 var trackers = {};
 
-var mongodb_host = "mongodb://localhost:32768";
+var mongodb_host = process.env.MONGO_HOST;
 
 let resp_error = (resp, reason, moredata={}) => {
     let data = {
