@@ -251,29 +251,33 @@ app.try_post('/private/push', (req, res) => {
         let tracker = trackers[gamename];
 
         if (tracker !== undefined){
-            modeltracker.checkpassword(tracker.Database, gamekey, (data) => {
-                if (data.valid){
-                    tracker.AccesstokenCollection.find({_id : new ObjectId(accessToken)}).toArray((err, items) => {
-                        console.log(items);
-                        if (items.length > 0){
-                            let document = items[0];
+            if (ObjectID.isValid(accessToken)){
+                modeltracker.checkpassword(tracker.Database, gamekey, (data) => {
+                    if (data.valid){
+                        tracker.AccesstokenCollection.find({_id : new ObjectId(accessToken)}).toArray((err, items) => {
+                            console.log(items);
+                            if (items.length > 0){
+                                let document = items[0];
 
-                            let userid = document.userid;
-                            let dbCollection = tracker.Database.collection(collection);
+                                let userid = document.userid;
+                                let dbCollection = tracker.Database.collection(collection);
 
-                            dbCollection.find({userid : userid}).count((err, count) => {
-                              dbCollection.insertOne(Object.assign({userid : userid}, JSON.parse(gamedata)), () => {
-                                        resp_msg(res, "Data push complete.");
-                                    });
-                            });
-                        }else{
-                            resp_error(res, "Invalid accessToken");
-                        }
-                    });
-                }else{
-                    resp_error(res, data.reason);
-                }
-            });
+                                dbCollection.find({userid : userid}).count((err, count) => {
+                                  dbCollection.insertOne(Object.assign({userid : userid}, JSON.parse(gamedata)), () => {
+                                            resp_msg(res, "Data push complete.");
+                                        });
+                                });
+                            }else{
+                                resp_error(res, "Invalid accessToken");
+                            }
+                        });
+                    }else{
+                        resp_error(res, data.reason);
+                    }
+                });
+            }else{
+                resp_error(res, "accessToken is not valid");
+            }
         }else{
             resp_error(res, "Db you requested is not exists");
         }

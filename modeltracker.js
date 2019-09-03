@@ -17,7 +17,7 @@ const checkpassword = (db, password, callback) => {
                 callback({valid:false, reason:"password invalid"});
             }
         }else{
-            callback({valid:false, reason:"not exists any documents"});
+            callback({valid:false, reason:"not exists any accounts"});
         }
     });
 }
