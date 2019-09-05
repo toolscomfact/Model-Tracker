@@ -6,7 +6,7 @@ const https = require('https');
 
 const modeltracker = require('./modeltracker.js');
 
-const ObjectId = require('mongodb').ObjectID;
+const ObjectId = require('mongodb').ObjectId;
 
 var app = express();
 
@@ -251,7 +251,7 @@ app.try_post('/private/push', (req, res) => {
         let tracker = trackers[gamename];
 
         if (tracker !== undefined){
-            if (ObjectID.isValid(accessToken)){
+            if (ObjectId.isValid(accessToken)){
                 modeltracker.checkpassword(tracker.Database, gamekey, (data) => {
                     if (data.valid){
                         tracker.AccesstokenCollection.find({_id : new ObjectId(accessToken)}).toArray((err, items) => {
@@ -304,9 +304,14 @@ app.try_post('/private/pull', (req, res) => {
                 if (items.length > 0){
                     let document = items[0];
 
+                    query = JSON.pasre(query);
+                    if ("_id" in Object.keys(query)){
+                      query["_id"] = new ObjectId(query["_id"]);
+                    }
+
                     let dbCollection = tracker.Database.collection(collection);
 
-                    dbCollection.deleteMany(Object.assign({userid : document.userid}, JSON.parse(query)), () => {
+                    dbCollection.deleteMany(Object.assign({userid : document.userid}, query), () => {
                         resp_msg(res, "delete completed");
                     });
                 }else{
@@ -345,16 +350,21 @@ app.try_post('/private/update', (req, res) => {
 
                     let dbCollection = tracker.Database.collection(collection);
 
-                    let queryObject = Object.assign({userid : userid}, JSON.parse(query));
-                    console.log("query : " + JSON.stringify(queryObject));
+                    query = JSON.parse(query);
+
+                    if (Object.keys(query).includes("_id")){
+                      query["_id"] = new ObjectId(query["_id"]);
+                    }
+
+                    let queryObject = Object.assign({userid : userid}, query);
 
                     dbCollection.find(queryObject).toArray((err, collectionItems) => {
                         if (collectionItems != null){
                             let collectionDocument = collectionItems[0];
+                            console.log(collectionItems);
 
                             dbCollection.updateMany(
-                              Object.assign({userid : userid}, JSON.parse(query)),
-                              JSON.parse(updatedata), (err, result) => {
+                              queryObject, JSON.parse(updatedata), (err, result) => {
                                resp_msg(res, "Update completed [ msg " + err + " ]");
                             });
                         }else{
@@ -393,6 +403,11 @@ app.try_post('/private/get', (req, res) => {
                     let queryObject = JSON.parse(query);
 
                     let dbCollection = tracker.Database.collection(collection);
+
+                    if ("_id" in Object.keys(queryObject)){
+                      queryObject["_id"] = new ObjectId(queryObject["_id"]);
+                    }
+
                     console.log(queryObject);
                     console.log(Object.assign(queryObject, {userid : accessTokenDocument.userid}));
 
